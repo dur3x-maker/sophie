@@ -31,6 +31,10 @@ class Settings(BaseSettings):
         default="https://openrouter.ai/api/v1",
         validation_alias=AliasChoices("OPENROUTER_BASE_URL", "APP_OPENROUTER_BASE_URL"),
     )
+    telegram_bot_token: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("TELEGRAM_BOT_TOKEN", "APP_TELEGRAM_BOT_TOKEN"),
+    )
 
 
 @lru_cache
