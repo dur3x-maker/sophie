@@ -33,6 +33,25 @@ python -m venv .venv
 pip install -e ".[dev]"
 ```
 
+## Structure
+
+```text
+app/
+  api/
+  config/
+  core/
+  llm/
+  memory/
+  planner/
+  providers/
+  router/
+  telegram/
+  tools/
+  workers/
+docker/
+tests/
+```
+
 ## Quality
 
 ```bash
