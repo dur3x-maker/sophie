@@ -1,5 +1,7 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 
 
-class BaseProvider(ABC):  # noqa: B024
-    """Base provider interface."""
+class BaseProvider(ABC):
+    @abstractmethod
+    async def chat(self, messages: list[dict[str, str]]) -> str:
+        raise NotImplementedError

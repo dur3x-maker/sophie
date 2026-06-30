@@ -19,6 +19,18 @@ class Settings(BaseSettings):
         default="postgresql+psycopg://sophie:sophie@localhost:5432/sophie",
         validation_alias=AliasChoices("DATABASE_URL", "APP_DATABASE_URL"),
     )
+    openrouter_api_key: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("OPENROUTER_API_KEY", "APP_OPENROUTER_API_KEY"),
+    )
+    openrouter_model: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("OPENROUTER_MODEL", "APP_OPENROUTER_MODEL"),
+    )
+    openrouter_base_url: str = Field(
+        default="https://openrouter.ai/api/v1",
+        validation_alias=AliasChoices("OPENROUTER_BASE_URL", "APP_OPENROUTER_BASE_URL"),
+    )
 
 
 @lru_cache
