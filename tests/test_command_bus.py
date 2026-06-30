@@ -1,3 +1,4 @@
+import asyncio
 from datetime import UTC, datetime
 from uuid import uuid4
 
@@ -16,7 +17,7 @@ def test_command_bus_dispatches_command_to_echo_worker() -> None:
     )
     bus = CommandBus(router=RuleBasedRouter())
 
-    result = bus.dispatch(command)
+    result = asyncio.run(bus.dispatch(command))
 
     assert result.success is True
     assert result.message == "Привет"

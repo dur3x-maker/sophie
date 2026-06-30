@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 from app.core.command_bus import CommandBus
-from app.domain.commands import UserCommand, WorkerResult
+from app.domain.commands import CommandResult, UserCommand
 
 
 def test_user_command_can_be_created() -> None:
@@ -18,8 +18,8 @@ def test_user_command_can_be_created() -> None:
     assert command.metadata == {}
 
 
-def test_worker_result_can_be_created() -> None:
-    result = WorkerResult(success=True)
+def test_command_result_can_be_created() -> None:
+    result = CommandResult(success=True)
 
     assert result.success is True
     assert result.message is None

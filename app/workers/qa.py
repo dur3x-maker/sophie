@@ -1,7 +1,7 @@
-from app.domain.commands import UserCommand, WorkerResult
+from app.domain.commands import CommandResult, UserCommand
 from app.workers.base import BaseWorker
 
 
 class QAWorker(BaseWorker):
-    def handle(self, command: UserCommand) -> WorkerResult:
+    async def handle(self, command: UserCommand) -> CommandResult:
         raise NotImplementedError

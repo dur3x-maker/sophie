@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
-from app.domain.commands import UserCommand, WorkerResult
+from app.domain.commands import CommandResult, UserCommand
 
 
 class BaseWorker(ABC):
     @abstractmethod
-    def handle(self, command: UserCommand) -> WorkerResult:
+    async def handle(self, command: UserCommand) -> CommandResult:
         raise NotImplementedError

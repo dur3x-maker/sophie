@@ -14,7 +14,7 @@ class UserCommand(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
-class WorkerResult(BaseModel):
+class CommandResult(BaseModel):
     success: bool
     message: str | None = None
     data: dict[str, Any] = Field(default_factory=dict)
