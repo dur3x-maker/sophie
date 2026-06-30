@@ -21,11 +21,11 @@
 
 Статус: в работе.
 
-- In-memory conversation memory.
-- Интеграция краткосрочной памяти в Worker pipeline.
-- Первые специализированные Worker.
-- Tools abstraction для внешних сервисов.
-- API interface.
+- [x] In-memory conversation memory.
+- [ ] Интеграция краткосрочной памяти в Worker pipeline.
+- [ ] Первые специализированные Worker.
+- [ ] Tools abstraction для внешних сервисов.
+- [ ] API interface.
 
 ## Phase 3 — Intelligence
 

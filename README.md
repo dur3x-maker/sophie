@@ -33,6 +33,26 @@ python -m venv .venv
 pip install -e ".[dev]"
 ```
 
+## Interfaces
+
+Run local CLI:
+
+```bash
+python -m app.cli
+```
+
+Run Telegram bot:
+
+```bash
+python -m app.run_bot
+```
+
+Required runtime variables for LLM and Telegram usage:
+
+- `OPENROUTER_API_KEY`
+- `OPENROUTER_MODEL`
+- `TELEGRAM_BOT_TOKEN`
+
 ## Structure
 
 ```text
@@ -51,6 +71,26 @@ app/
   workers/
 docker/
 tests/
+```
+
+## Current Pipeline
+
+```text
+CLI / Telegram / API
+        ↓
+UserCommand
+        ↓
+CommandBus
+        ↓
+Router
+        ↓
+WorkerFactory
+        ↓
+Worker
+        ↓
+LLMManager / Tools / Memory
+        ↓
+CommandResult
 ```
 
 ## Quality

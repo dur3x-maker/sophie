@@ -48,3 +48,10 @@
 - Decision: Все обращения к LLM проходят только через LLMManager.
 - Reason: Worker не должен зависеть от конкретного provider или внешнего API.
 - Status: Accepted
+
+## ADR-008 — Short-Term In-Memory Memory
+
+- ID: ADR-008
+- Decision: Краткосрочная память реализуется отдельным async-слоем Memory с in-memory storage.
+- Reason: На текущем этапе нужна память диалога без PostgreSQL, Redis и внешних сервисов.
+- Status: Accepted
