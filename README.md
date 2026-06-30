@@ -40,6 +40,7 @@ app/
   api/
   config/
   core/
+  domain/
   llm/
   memory/
   planner/
