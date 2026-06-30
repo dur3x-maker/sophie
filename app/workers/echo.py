@@ -4,4 +4,4 @@ from app.workers.base import BaseWorker
 
 class EchoWorker(BaseWorker):
     def handle(self, command: UserCommand) -> WorkerResult:
-        raise NotImplementedError
+        return WorkerResult(success=True, message=command.text)
