@@ -13,6 +13,9 @@ class OpenRouterProvider(BaseProvider):
         self._base_url = base_url.rstrip("/")
 
     async def chat(self, messages: list[dict[str, str]]) -> str:
+        if not self._api_key or not self._model:
+            raise LLMProviderError("OpenRouter API key and model are required")
+
         try:
             async with httpx.AsyncClient(base_url=self._base_url, timeout=60.0) as client:
                 response = await client.post(

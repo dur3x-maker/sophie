@@ -5,7 +5,7 @@ from uuid import uuid4
 from app.core.exceptions import LLMProviderError
 from app.domain.commands import UserCommand
 from app.llm.manager import LLMManager
-from app.workers.echo import EchoWorker
+from app.workers.echo import LLM_FALLBACK_MESSAGE, EchoWorker
 
 
 class FakeLLMManager(LLMManager):
@@ -34,7 +34,7 @@ def test_echo_worker_returns_error_result_on_provider_error() -> None:
     result = asyncio.run(worker.handle(_command("hello")))
 
     assert result.success is False
-    assert result.message == "provider failed"
+    assert result.message == LLM_FALLBACK_MESSAGE
 
 
 def _command(text: str) -> UserCommand:
