@@ -1,5 +1,14 @@
 # Sophie Roadmap
 
+## Capabilities
+
+- Remote Infrastructure — Planned
+- Docker Operations — Planned
+- Git Operations — Planned
+- Filesystem Operations — Planned
+- Browser / Playwright — Planned
+- Threads Publishing — Planned
+
 ## Phase 1 — Foundation
 
 Статус: завершено.

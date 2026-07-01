@@ -1,5 +1,15 @@
 # Sophie Architecture
 
+## Capability-based Development
+
+New Sophie features are added through capabilities. A capability must describe real
+user value: what Sophie can do for the user, which tools and workers are involved,
+which prompts, tests, and docs are required, and what acceptance criteria prove the
+ability works.
+
+Capabilities may include Tools, Workers, Prompts, Tests, and Docs. New abstract
+architecture layers are not added unless a capability needs them.
+
 ## Security Layer
 
 LLM output is untrusted. The LLM does not receive direct access to the host system or

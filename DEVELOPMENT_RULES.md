@@ -1,5 +1,10 @@
 # Development Rules
 
+## Capability Rule
+
+Starting from this stage, each task must be linked to a capability or explicitly explain
+why it is infrastructure work.
+
 ## Роли
 
 ### Product Owner
