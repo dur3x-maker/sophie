@@ -24,12 +24,17 @@ class ReplyMessage(Protocol):
 
 
 def build_user_command(message: ReplyMessage) -> UserCommand:
+    user_id = str(message.from_user.id) if message.from_user is not None else "unknown"
+    chat = getattr(message, "chat", None)
+    chat_id = str(chat.id) if chat is not None else user_id
+
     return UserCommand(
         id=uuid4(),
         text=message.text or "",
         source="telegram",
-        user_id=str(message.from_user.id) if message.from_user is not None else "unknown",
+        user_id=user_id,
         created_at=datetime.now(UTC),
+        metadata={"chat_id": chat_id},
     )
 
 

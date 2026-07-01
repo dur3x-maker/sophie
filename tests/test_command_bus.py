@@ -13,8 +13,8 @@ class FakeLLMManager(LLMManager):
     def __init__(self) -> None:
         pass
 
-    async def chat(self, text: str) -> str:
-        return f"model: {text}"
+    async def chat(self, messages: list[dict[str, str]]) -> str:
+        return f"model: {messages[-1]['content']}"
 
 
 def test_command_bus_dispatches_command_to_echo_worker() -> None:

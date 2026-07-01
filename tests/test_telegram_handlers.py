@@ -41,8 +41,17 @@ class FailingLLMManager(LLMManager):
     def __init__(self) -> None:
         pass
 
-    async def chat(self, text: str) -> str:
+    async def chat(self, messages: list[dict[str, str]]) -> str:
         raise LLMProviderError("provider failed")
+
+
+class RecordingLLMManager(LLMManager):
+    def __init__(self) -> None:
+        self.messages: list[list[dict[str, str]]] = []
+
+    async def chat(self, messages: list[dict[str, str]]) -> str:
+        self.messages.append(messages)
+        return f"model: {messages[-1]['content']}"
 
 
 def test_build_user_command_from_telegram_message() -> None:
@@ -57,6 +66,7 @@ def test_build_user_command_from_telegram_message() -> None:
     assert command.text == "hello"
     assert command.source == "telegram"
     assert command.user_id == "123"
+    assert command.metadata == {"chat_id": "123"}
 
 
 def test_process_text_message_answers_with_command_result() -> None:
@@ -101,3 +111,30 @@ def test_telegram_pipeline_answers_with_fallback_when_llm_is_unavailable() -> No
     asyncio.run(process_text_message(message, command_bus))
 
     assert message.answers == [LLM_FALLBACK_MESSAGE]
+
+
+def test_telegram_pipeline_passes_previous_message_history_to_llm() -> None:
+    llm_manager = RecordingLLMManager()
+    command_bus = CommandBus(
+        router=RuleBasedRouter(),
+        worker_factory=WorkerFactory(llm_manager=llm_manager),
+    )
+    first_message = FakeMessage(
+        text="first",
+        from_user=User(id=123, is_bot=False, first_name="Test"),
+        answers=[],
+    )
+    second_message = FakeMessage(
+        text="second",
+        from_user=User(id=123, is_bot=False, first_name="Test"),
+        answers=[],
+    )
+
+    asyncio.run(process_text_message(first_message, command_bus))
+    asyncio.run(process_text_message(second_message, command_bus))
+
+    second_call = llm_manager.messages[1]
+
+    assert {"role": "user", "content": "first"} in second_call
+    assert {"role": "assistant", "content": "model: first"} in second_call
+    assert second_call[-1] == {"role": "user", "content": "second"}

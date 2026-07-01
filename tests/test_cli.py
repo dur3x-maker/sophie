@@ -16,15 +16,15 @@ class FakeLLMManager(LLMManager):
     def __init__(self) -> None:
         pass
 
-    async def chat(self, text: str) -> str:
-        return f"model: {text}"
+    async def chat(self, messages: list[dict[str, str]]) -> str:
+        return f"model: {messages[-1]['content']}"
 
 
 class FailingLLMManager(LLMManager):
     def __init__(self) -> None:
         pass
 
-    async def chat(self, text: str) -> str:
+    async def chat(self, messages: list[dict[str, str]]) -> str:
         raise LLMProviderError("provider failed")
 
 
@@ -62,7 +62,7 @@ def test_cli_prints_fallback_when_llm_is_unavailable(
     assert LLM_FALLBACK_MESSAGE in capsys.readouterr().out
 
 
-def test_cli_prints_message_for_unimplemented_worker(
+def test_cli_routes_specialized_worker_to_llm_pipeline(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
@@ -76,7 +76,7 @@ def test_cli_prints_message_for_unimplemented_worker(
 
     asyncio.run(run(bus=bus))
 
-    assert "Worker is not implemented yet." in capsys.readouterr().out
+    assert "model: write post" in capsys.readouterr().out
 
 
 def _read_input(user_input: Iterator[str]) -> Callable[[str], str]:

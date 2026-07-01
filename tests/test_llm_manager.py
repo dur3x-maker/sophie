@@ -27,7 +27,7 @@ def test_llm_manager_can_be_created() -> None:
 def test_llm_manager_chat_returns_provider_text() -> None:
     manager = LLMManager(provider=FakeProvider())
 
-    result = asyncio.run(manager.chat("hello"))
+    result = asyncio.run(manager.chat([{"role": "user", "content": "hello"}]))
 
     assert result == "hi"
 
@@ -36,4 +36,4 @@ def test_llm_manager_propagates_provider_error() -> None:
     manager = LLMManager(provider=FailingProvider())
 
     with pytest.raises(LLMProviderError, match="provider failed"):
-        asyncio.run(manager.chat("hello"))
+        asyncio.run(manager.chat([{"role": "user", "content": "hello"}]))

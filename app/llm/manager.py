@@ -5,6 +5,5 @@ class LLMManager:
     def __init__(self, provider: BaseProvider) -> None:
         self._provider = provider
 
-    async def chat(self, text: str) -> str:
-        messages = [{"role": "user", "content": text}]
+    async def chat(self, messages: list[dict[str, str]]) -> str:
         return await self._provider.chat(messages)

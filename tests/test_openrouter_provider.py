@@ -77,7 +77,14 @@ def test_openrouter_http_error_logs_response_and_echo_worker_returns_fallback(
         model="openai/gpt-oss-120b:free",
         base_url="https://openrouter.ai/api/v1",
     )
-    worker = EchoWorker(llm_manager=LLMManager(provider=provider))
+    from app.llm.prompt_builder import PromptBuilder
+    from app.memory.in_memory import InMemoryConversationMemory
+
+    worker = EchoWorker(
+        llm_manager=LLMManager(provider=provider),
+        memory=InMemoryConversationMemory(),
+        prompt_builder=PromptBuilder(),
+    )
 
     result = asyncio.run(worker.handle(_command("hello")))
 

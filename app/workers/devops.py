@@ -1,7 +1,5 @@
-from app.domain.commands import CommandResult, UserCommand
-from app.workers.base import BaseWorker
+from app.workers.llm_conversation import LLMConversationWorker
 
 
-class DevOpsWorker(BaseWorker):
-    async def handle(self, command: UserCommand) -> CommandResult:
-        raise NotImplementedError
+class DevOpsWorker(LLMConversationWorker):
+    pass
