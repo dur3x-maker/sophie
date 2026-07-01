@@ -4,14 +4,14 @@ from app.tools.base import BaseTool
 from app.tools.result import ToolResult
 
 
-class GitTool(BaseTool):
+class EchoTool(BaseTool):
     @property
     def name(self) -> str:
-        return "git"
+        return "echo"
 
     @property
     def description(self) -> str:
-        return "Git operations tool placeholder."
+        return "Test echo tool."
 
     async def execute(self, **kwargs: Any) -> ToolResult:
-        raise NotImplementedError("GitTool is not implemented yet")
+        return ToolResult(success=True, output="echo")

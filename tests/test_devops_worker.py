@@ -28,7 +28,7 @@ def test_devops_worker_configuration_uses_registries() -> None:
 
     assert worker.prompt_path == "app/prompts/workers/devops.md"
     assert worker.model == "custom/devops"
-    assert [tool.name() for tool in worker.allowed_tools] == [
+    assert [tool.name for tool in worker.allowed_tools] == [
         "ssh",
         "shell",
         "docker",
@@ -49,4 +49,4 @@ def test_worker_factory_injects_devops_worker_configuration() -> None:
 
     assert isinstance(worker, DevOpsWorker)
     assert worker.model == "custom/devops"
-    assert [tool.name() for tool in worker.allowed_tools] == list(DevOpsWorker.allowed_tool_names)
+    assert [tool.name for tool in worker.allowed_tools] == list(DevOpsWorker.allowed_tool_names)

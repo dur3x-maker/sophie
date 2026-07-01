@@ -10,22 +10,28 @@ from app.tools.ssh import SSHTool
 
 
 class ToolRegistry:
-    def __init__(self, tools: Iterable[BaseTool] | None = None) -> None:
+    def __init__(self, tools: Iterable[type[BaseTool] | BaseTool] | None = None) -> None:
         registered_tools = tools or (
-            SSHTool(),
-            ShellTool(),
-            DockerTool(),
-            GitTool(),
-            FilesystemTool(),
-            HttpTool(),
+            SSHTool,
+            ShellTool,
+            DockerTool,
+            GitTool,
+            FilesystemTool,
+            HttpTool,
         )
-        self._tools = {tool.name(): tool for tool in registered_tools}
+        self._tool_classes = {
+            self._tool_name(tool): tool if isinstance(tool, type) else type(tool)
+            for tool in registered_tools
+        }
 
     def get(self, tool_name: str) -> BaseTool:
-        return self._tools[tool_name]
+        return self._tool_classes[tool_name]()
 
     def get_many(self, tool_names: Iterable[str]) -> list[BaseTool]:
         return [self.get(tool_name) for tool_name in tool_names]
 
     def names(self) -> list[str]:
-        return list(self._tools)
+        return list(self._tool_classes)
+
+    def _tool_name(self, tool: type[BaseTool] | BaseTool) -> str:
+        return tool().name if isinstance(tool, type) else tool.name
