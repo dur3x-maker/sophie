@@ -10,6 +10,7 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         env_prefix="APP_",
         extra="ignore",
+        populate_by_name=True,
     )
 
     name: str = Field(default="Sophie")
@@ -34,6 +35,42 @@ class Settings(BaseSettings):
     telegram_bot_token: str | None = Field(
         default=None,
         validation_alias=AliasChoices("TELEGRAM_BOT_TOKEN", "APP_TELEGRAM_BOT_TOKEN"),
+    )
+    server_sweden_host: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("SERVER_SWEDEN_HOST", "APP_SERVER_SWEDEN_HOST"),
+    )
+    server_sweden_username: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("SERVER_SWEDEN_USERNAME", "APP_SERVER_SWEDEN_USERNAME"),
+    )
+    server_sweden_password: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("SERVER_SWEDEN_PASSWORD", "APP_SERVER_SWEDEN_PASSWORD"),
+    )
+    server_france_host: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("SERVER_FRANCE_HOST", "APP_SERVER_FRANCE_HOST"),
+    )
+    server_france_username: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("SERVER_FRANCE_USERNAME", "APP_SERVER_FRANCE_USERNAME"),
+    )
+    server_france_password: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("SERVER_FRANCE_PASSWORD", "APP_SERVER_FRANCE_PASSWORD"),
+    )
+    server_usa_host: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("SERVER_USA_HOST", "APP_SERVER_USA_HOST"),
+    )
+    server_usa_username: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("SERVER_USA_USERNAME", "APP_SERVER_USA_USERNAME"),
+    )
+    server_usa_password: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("SERVER_USA_PASSWORD", "APP_SERVER_USA_PASSWORD"),
     )
 
 

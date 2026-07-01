@@ -85,6 +85,9 @@ def test_tool_result_can_be_created() -> None:
 
     assert result.success is True
     assert result.output == "done"
+    assert result.stdout == ""
+    assert result.stderr == ""
+    assert result.exit_code is None
     assert result.error is None
     assert result.execution_time == 0.1
     assert result.metadata == {"tool_name": "fake"}
@@ -182,3 +185,17 @@ def test_placeholder_tools_are_not_implemented() -> None:
 
     with pytest.raises(NotImplementedError, match="DockerTool"):
         asyncio.run(tool.execute())
+
+
+def test_ssh_tool_rejects_commands_outside_allowlist() -> None:
+    tool = SSHTool()
+
+    with pytest.raises(ValueError, match="Command is not allowed"):
+        asyncio.run(
+            tool.execute(
+                host="example.com",
+                username="deploy",
+                password="secret",
+                command="docker restart backend",
+            )
+        )

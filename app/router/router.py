@@ -8,7 +8,7 @@ class RuleBasedRouter(BaseRouter):
     def route(self, command: UserCommand) -> type[BaseWorker]:
         text = command.text.lower()
 
-        if any(keyword in text for keyword in ("docker", "compose", "container")):
+        if any(keyword in text for keyword in ("docker", "compose", "container", "докер")):
             return WORKER_REGISTRY["devops"]
         if any(keyword in text for keyword in ("pytest", "test", "bug", "error", "баг")):
             return WORKER_REGISTRY["qa"]

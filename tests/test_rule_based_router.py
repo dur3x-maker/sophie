@@ -36,3 +36,17 @@ def test_rule_based_router_selects_worker(
     worker_cls = RuleBasedRouter().route(command)
 
     assert worker_cls is expected_worker
+
+
+def test_rule_based_router_selects_devops_for_russian_docker_request() -> None:
+    command = UserCommand(
+        id=uuid4(),
+        text="что с докером на швеции",
+        source="test",
+        user_id="user-1",
+        created_at=datetime.now(UTC),
+    )
+
+    worker_cls = RuleBasedRouter().route(command)
+
+    assert worker_cls is DevOpsWorker

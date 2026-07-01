@@ -1,5 +1,21 @@
 # Sophie
 
+## Remote Infrastructure Example
+
+Пользователь:
+
+```text
+Что с докером на Франции?
+```
+
+Sophie:
+
+```text
+Контейнеры работают.
+Backend healthy.
+Ошибок не обнаружено.
+```
+
 Foundation for a personal AI agent platform.
 
 ## Stack

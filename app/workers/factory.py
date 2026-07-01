@@ -1,3 +1,4 @@
+from app.devops.server_registry import ServerRegistry
 from app.llm.manager import LLMManager
 from app.llm.model_registry import ModelRegistry
 from app.llm.prompt_builder import PromptBuilder
@@ -17,12 +18,14 @@ class WorkerFactory:
         prompt_builder: PromptBuilder | None = None,
         model_registry: ModelRegistry | None = None,
         tool_registry: ToolRegistry | None = None,
+        server_registry: ServerRegistry | None = None,
     ) -> None:
         self._llm_manager = llm_manager
         self._memory = memory or InMemoryConversationMemory()
         self._prompt_builder = prompt_builder or PromptBuilder()
         self._model_registry = model_registry or ModelRegistry()
         self._tool_registry = tool_registry or ToolRegistry()
+        self._server_registry = server_registry or ServerRegistry()
 
     async def create(self, worker_cls: type[BaseWorker]) -> BaseWorker:
         if issubclass(worker_cls, LLMConversationWorker):
@@ -35,6 +38,7 @@ class WorkerFactory:
                     prompt_builder=self._prompt_builder,
                     model_registry=self._model_registry,
                     tool_registry=self._tool_registry,
+                    server_registry=self._server_registry,
                 )
             return worker_cls(
                 llm_manager=self._llm_manager,
