@@ -1,0 +1,1 @@
+"""Worker-specific prompt assets."""
