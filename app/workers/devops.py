@@ -13,15 +13,14 @@ from app.tools.registry import ToolRegistry
 from app.tools.result import ToolResult
 from app.workers.llm_conversation import LLM_FALLBACK_MESSAGE, LLMConversationWorker
 
-DOCKER_PS_COMMAND = "docker compose ps"
-DOCKER_LOGS_COMMAND = "docker compose logs --tail=50"
-DOCKER_DIAGNOSTIC_COMMANDS = (DOCKER_PS_COMMAND, DOCKER_LOGS_COMMAND)
+DOCKER_HEALTH_TOOL_NAME = "docker_health"
+SERVER_INFO_TOOL_NAME = "server_info"
 
 
 class DevOpsWorker(LLMConversationWorker):
     name = "devops"
     prompt_path = "app/prompts/workers/devops.md"
-    allowed_tool_names = ("ssh",)
+    allowed_tool_names = (DOCKER_HEALTH_TOOL_NAME, SERVER_INFO_TOOL_NAME)
 
     def __init__(
         self,
@@ -45,7 +44,8 @@ class DevOpsWorker(LLMConversationWorker):
         self._server_registry = server_registry or ServerRegistry()
 
     async def handle(self, command: UserCommand) -> CommandResult:
-        if not self._is_docker_status_request(command.text):
+        tool_name = self._detect_diagnostic_tool(command.text)
+        if tool_name is None:
             return await super().handle(command)
 
         chat_id = str(command.metadata.get("chat_id") or command.user_id)
@@ -55,11 +55,11 @@ class DevOpsWorker(LLMConversationWorker):
         try:
             server_name = self._detect_server_name(command.text)
             server = self._server_registry.get(server_name)
-            tool_results = await self._run_docker_diagnostics(server)
+            tool_result = await self._run_remote_diagnostic(tool_name, server)
             messages.append(
                 {
                     "role": "user",
-                    "content": self._format_docker_observation(server_name, tool_results),
+                    "content": self._format_remote_observation(server_name, tool_name, tool_result),
                 }
             )
             message = await self._llm_manager.chat(messages)
@@ -73,6 +73,13 @@ class DevOpsWorker(LLMConversationWorker):
 
         return CommandResult(success=True, message=message)
 
+    def _detect_diagnostic_tool(self, text: str) -> str | None:
+        if self._is_docker_status_request(text):
+            return DOCKER_HEALTH_TOOL_NAME
+        if self._is_server_info_request(text):
+            return SERVER_INFO_TOOL_NAME
+        return None
+
     def _is_docker_status_request(self, text: str) -> bool:
         normalized_text = text.casefold()
         return any(
@@ -80,9 +87,26 @@ class DevOpsWorker(LLMConversationWorker):
             for phrase in (
                 "что с докером",
                 "статус докера",
+                "статус контейнеров",
+                "контейнеры работают",
                 "проверь докер",
+                "проверь docker",
                 "docker status",
                 "check docker",
+            )
+        )
+
+    def _is_server_info_request(self, text: str) -> bool:
+        normalized_text = text.casefold()
+        return any(
+            phrase in normalized_text
+            for phrase in (
+                "как сервер",
+                "как себя чувствует",
+                "какая нагрузка",
+                "всё нормально с сервером",
+                "все нормально с сервером",
+                "как там",
             )
         )
 
@@ -97,31 +121,30 @@ class DevOpsWorker(LLMConversationWorker):
 
         raise ValueError("Не понял, какой сервер проверить: Швеция, Франция или США.")
 
-    async def _run_docker_diagnostics(self, server: ServerCredentials) -> list[ToolResult]:
-        results: list[ToolResult] = []
-        for diagnostic_command in DOCKER_DIAGNOSTIC_COMMANDS:
-            results.append(
-                await self._tool_manager.execute(
-                    "ssh",
-                    host=server.host,
-                    username=server.username,
-                    password=server.password,
-                    command=diagnostic_command,
-                    timeout=30.0,
-                )
-            )
-        return results
+    async def _run_remote_diagnostic(
+        self,
+        tool_name: str,
+        server: ServerCredentials,
+    ) -> ToolResult:
+        return await self._tool_manager.execute(
+            tool_name,
+            host=server.host,
+            username=server.username,
+            password=server.password,
+            timeout=30.0,
+        )
 
-    def _format_docker_observation(
+    def _format_remote_observation(
         self,
         server_name: str,
-        tool_results: list[ToolResult],
+        tool_name: str,
+        tool_result: ToolResult,
     ) -> str:
         payload = {
             "capability": "Remote Infrastructure",
             "server": server_name,
-            "diagnostic": "docker compose",
-            "results": [result.model_dump(mode="json") for result in tool_results],
-            "instruction": "Сделай краткую человеческую выжимку состояния Docker.",
+            "tool": tool_name,
+            "result": tool_result.model_dump(mode="json"),
+            "instruction": "Сделай краткую человеческую выжимку результата диагностики.",
         }
         return json.dumps(payload, ensure_ascii=False)

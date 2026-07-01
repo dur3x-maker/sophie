@@ -1,5 +1,21 @@
 # Sophie
 
+## Remote Infrastructure Diagnostics
+
+Пример 1:
+
+```text
+Пользователь: Что с докером на Швеции?
+Sophie: DockerHealthTool -> краткая человеческая выжимка.
+```
+
+Пример 2:
+
+```text
+Пользователь: Как там Франция?
+Sophie: ServerInfoTool -> краткая человеческая выжимка.
+```
+
 ## Remote Infrastructure Example
 
 Пользователь:

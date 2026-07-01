@@ -9,6 +9,9 @@ ALLOWED_SSH_COMMANDS = frozenset(
     {
         "docker compose ps",
         "docker compose logs --tail=50",
+        "uptime",
+        "free -h",
+        "df -h",
     }
 )
 

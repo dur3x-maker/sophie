@@ -59,18 +59,58 @@ class FakeSSHTool(BaseTool):
         )
 
 
+class FakeDockerHealthTool(BaseTool):
+    calls: list[dict[str, Any]] = []
+
+    @property
+    def name(self) -> str:
+        return "docker_health"
+
+    @property
+    def description(self) -> str:
+        return "Fake Docker health tool."
+
+    async def execute(self, **kwargs: Any) -> ToolResult:
+        self.calls.append(kwargs)
+        return ToolResult(
+            success=True,
+            output="docker healthy",
+            metadata={"ps": "backend running healthy", "logs": "backend no errors"},
+        )
+
+
+class FakeServerInfoTool(BaseTool):
+    calls: list[dict[str, Any]] = []
+
+    @property
+    def name(self) -> str:
+        return "server_info"
+
+    @property
+    def description(self) -> str:
+        return "Fake server info tool."
+
+    async def execute(self, **kwargs: Any) -> ToolResult:
+        self.calls.append(kwargs)
+        return ToolResult(
+            success=True,
+            output="server ok",
+            metadata={"uptime": "up 10 days", "memory": "free", "disk": "ok"},
+        )
+
+
 def test_devops_worker_configuration_uses_registries() -> None:
     worker = DevOpsWorker(
         llm_manager=FakeLLMManager(),
         memory=InMemoryConversationMemory(),
         prompt_builder=PromptBuilder(),
         model_registry=ModelRegistry(worker_models={"devops": "custom/devops"}),
-        tool_registry=ToolRegistry(),
+        tool_registry=ToolRegistry(tools=[FakeDockerHealthTool, FakeServerInfoTool]),
     )
 
     assert worker.prompt_path == "app/prompts/workers/devops.md"
     assert worker.model == "custom/devops"
-    assert [tool.name for tool in worker.allowed_tools] == ["ssh"]
+    assert [tool.name for tool in worker.allowed_tools] == ["docker_health", "server_info"]
 
 
 def test_worker_factory_injects_devops_worker_configuration() -> None:
@@ -78,7 +118,7 @@ def test_worker_factory_injects_devops_worker_configuration() -> None:
         WorkerFactory(
             llm_manager=FakeLLMManager(),
             model_registry=ModelRegistry(worker_models={"devops": "custom/devops"}),
-            tool_registry=ToolRegistry(),
+            tool_registry=ToolRegistry(tools=[FakeDockerHealthTool, FakeServerInfoTool]),
         ).create(DevOpsWorker)
     )
 
@@ -88,13 +128,13 @@ def test_worker_factory_injects_devops_worker_configuration() -> None:
 
 
 def test_devops_worker_runs_docker_diagnostics_on_known_server() -> None:
-    FakeSSHTool.calls = []
+    FakeDockerHealthTool.calls = []
     llm_manager = FakeLLMManager()
     worker = DevOpsWorker(
         llm_manager=llm_manager,
         memory=InMemoryConversationMemory(),
         prompt_builder=PromptBuilder(),
-        tool_registry=ToolRegistry(tools=[FakeSSHTool]),
+        tool_registry=ToolRegistry(tools=[FakeDockerHealthTool, FakeServerInfoTool]),
         server_registry=ServerRegistry(settings=_settings()),
     )
 
@@ -102,13 +142,31 @@ def test_devops_worker_runs_docker_diagnostics_on_known_server() -> None:
 
     assert result.success is True
     assert result.message == "Контейнеры работают. Backend healthy. Ошибок не обнаружено."
-    assert [call["command"] for call in FakeSSHTool.calls] == [
-        "docker compose ps",
-        "docker compose logs --tail=50",
-    ]
-    assert {call["host"] for call in FakeSSHTool.calls} == {"sweden.example.com"}
+    assert len(FakeDockerHealthTool.calls) == 1
+    assert FakeDockerHealthTool.calls[0]["host"] == "sweden.example.com"
+    assert "docker_health" in llm_manager.messages[0][-1]["content"]
     assert "backend running healthy" in llm_manager.messages[0][-1]["content"]
     assert "backend no errors" in llm_manager.messages[0][-1]["content"]
+
+
+def test_devops_worker_runs_server_info_on_known_server() -> None:
+    FakeServerInfoTool.calls = []
+    llm_manager = FakeLLMManager()
+    worker = DevOpsWorker(
+        llm_manager=llm_manager,
+        memory=InMemoryConversationMemory(),
+        prompt_builder=PromptBuilder(),
+        tool_registry=ToolRegistry(tools=[FakeDockerHealthTool, FakeServerInfoTool]),
+        server_registry=ServerRegistry(settings=_settings()),
+    )
+
+    result = asyncio.run(worker.handle(_command("Как там Франция?")))
+
+    assert result.success is True
+    assert len(FakeServerInfoTool.calls) == 1
+    assert FakeServerInfoTool.calls[0]["host"] == "france.example.com"
+    assert "server_info" in llm_manager.messages[0][-1]["content"]
+    assert "up 10 days" in llm_manager.messages[0][-1]["content"]
 
 
 def _settings() -> Settings:

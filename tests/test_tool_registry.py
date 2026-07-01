@@ -6,6 +6,7 @@ import pytest
 from app.tools.base import BaseTool
 from app.tools.call import ToolCall
 from app.tools.docker import DockerTool
+from app.tools.docker_health import DockerHealthTool
 from app.tools.echo import EchoTool
 from app.tools.executor import ToolExecutor
 from app.tools.filesystem import FilesystemTool
@@ -14,6 +15,7 @@ from app.tools.http import HttpTool
 from app.tools.manager import ToolManager
 from app.tools.registry import ToolRegistry
 from app.tools.result import ToolResult
+from app.tools.server_info import ServerInfoTool
 from app.tools.shell import ShellTool
 from app.tools.ssh import SSHTool
 
@@ -44,16 +46,45 @@ class FailingTool(BaseTool):
         raise RuntimeError("boom")
 
 
+class FakeSSHTool(BaseTool):
+    calls: list[dict[str, Any]] = []
+
+    @property
+    def name(self) -> str:
+        return "ssh"
+
+    @property
+    def description(self) -> str:
+        return "Fake SSH tool."
+
+    async def execute(self, **kwargs: Any) -> ToolResult:
+        self.calls.append(kwargs)
+        command = kwargs["command"]
+        output = f"output for {command}"
+        return ToolResult(success=True, output=output, stdout=output, exit_code=0)
+
+
 def test_tool_registry_contains_default_tool_names() -> None:
     registry = ToolRegistry()
 
-    assert registry.names() == ["ssh", "shell", "docker", "git", "filesystem", "http"]
+    assert registry.names() == [
+        "ssh",
+        "docker_health",
+        "server_info",
+        "shell",
+        "docker",
+        "git",
+        "filesystem",
+        "http",
+    ]
 
 
 def test_tool_registry_returns_default_tools() -> None:
     registry = ToolRegistry()
 
     assert isinstance(registry.get("ssh"), SSHTool)
+    assert isinstance(registry.get("docker_health"), DockerHealthTool)
+    assert isinstance(registry.get("server_info"), ServerInfoTool)
     assert isinstance(registry.get("shell"), ShellTool)
     assert isinstance(registry.get("docker"), DockerTool)
     assert isinstance(registry.get("git"), GitTool)
@@ -64,9 +95,9 @@ def test_tool_registry_returns_default_tools() -> None:
 def test_tool_registry_returns_requested_tools_in_order() -> None:
     registry = ToolRegistry()
 
-    tools = registry.get_many(["docker", "ssh"])
+    tools = registry.get_many(["docker_health", "ssh"])
 
-    assert [tool.name for tool in tools] == ["docker", "ssh"]
+    assert [tool.name for tool in tools] == ["docker_health", "ssh"]
 
 
 def test_tool_registry_creates_new_tool_instance() -> None:
@@ -178,6 +209,38 @@ def test_tool_manager_handles_placeholder_tools() -> None:
         "tool_name": "docker",
         "exception_type": "NotImplementedError",
     }
+
+
+def test_docker_health_tool_uses_ssh_tool_and_returns_single_result() -> None:
+    FakeSSHTool.calls = []
+    tool = DockerHealthTool(ssh_tool=FakeSSHTool())
+
+    result = asyncio.run(
+        tool.execute(host="example.com", username="deploy", password="secret", timeout=10.0)
+    )
+
+    assert result.success is True
+    assert [call["command"] for call in FakeSSHTool.calls] == [
+        "docker compose ps",
+        "docker compose logs --tail=50",
+    ]
+    assert result.metadata["ps"]["output"] == "output for docker compose ps"
+    assert result.metadata["logs"]["output"] == "output for docker compose logs --tail=50"
+
+
+def test_server_info_tool_uses_ssh_tool_and_returns_single_result() -> None:
+    FakeSSHTool.calls = []
+    tool = ServerInfoTool(ssh_tool=FakeSSHTool())
+
+    result = asyncio.run(
+        tool.execute(host="example.com", username="deploy", password="secret", timeout=10.0)
+    )
+
+    assert result.success is True
+    assert [call["command"] for call in FakeSSHTool.calls] == ["uptime", "free -h", "df -h"]
+    assert result.metadata["uptime"]["output"] == "output for uptime"
+    assert result.metadata["memory"]["output"] == "output for free -h"
+    assert result.metadata["disk"]["output"] == "output for df -h"
 
 
 def test_placeholder_tools_are_not_implemented() -> None:

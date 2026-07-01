@@ -2,9 +2,11 @@ from collections.abc import Iterable
 
 from app.tools.base import BaseTool
 from app.tools.docker import DockerTool
+from app.tools.docker_health import DockerHealthTool
 from app.tools.filesystem import FilesystemTool
 from app.tools.git import GitTool
 from app.tools.http import HttpTool
+from app.tools.server_info import ServerInfoTool
 from app.tools.shell import ShellTool
 from app.tools.ssh import SSHTool
 
@@ -13,6 +15,8 @@ class ToolRegistry:
     def __init__(self, tools: Iterable[type[BaseTool] | BaseTool] | None = None) -> None:
         registered_tools = tools or (
             SSHTool,
+            DockerHealthTool,
+            ServerInfoTool,
             ShellTool,
             DockerTool,
             GitTool,
