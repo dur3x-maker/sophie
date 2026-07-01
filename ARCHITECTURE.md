@@ -1,5 +1,26 @@
 # Sophie Architecture
 
+## Security Layer
+
+LLM output is untrusted. The LLM does not receive direct access to the host system or
+remote infrastructure and does not call tools by itself.
+
+Tool execution must follow one path:
+
+```text
+AgentLoop
+        ↓
+ToolManager
+        ↓
+ToolExecutor
+        ↓
+Tool
+```
+
+`ToolExecutor` owns the security gate for command-like tool arguments through
+`SecurityValidator`. Security rules live in `SecurityPolicy`, not inside workers or
+individual tools.
+
 ## Назначение проекта
 
 Sophie — платформа персонального AI-агента. Проект строится вокруг единого pipeline обработки пользовательских команд, чтобы разные интерфейсы могли использовать одну и ту же доменную модель.

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
+from app.security.policy import RiskLevel
 from app.tools.result import ToolResult
 
 
@@ -18,6 +19,10 @@ class BaseTool(ABC):
     @property
     def requires_confirmation(self) -> bool:
         return False
+
+    @property
+    def risk_level(self) -> RiskLevel:
+        return RiskLevel.SAFE
 
     @abstractmethod
     async def execute(self, **kwargs: Any) -> ToolResult:

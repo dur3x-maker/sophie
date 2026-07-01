@@ -102,6 +102,7 @@ def test_echo_tool_returns_tool_result() -> None:
     result = asyncio.run(tool.execute())
 
     assert tool.requires_confirmation is False
+    assert tool.risk_level == "safe"
     assert result == ToolResult(success=True, output="echo")
 
 
